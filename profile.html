@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup Form</title>
+
+    <style>
+        body{
+            font-family: Arial;
+            font-weight: bold;
+        }
+
+        .container{
+            margin: 30px auto;
+            width: 500px;
+            background-color: rgb(191, 203, 222);
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgb(119, 115, 115);
+            padding: 20px;
+        }
+
+        label{
+            display: block;
+            text-align: left;
+            margin-top: 10px;
+        }
+
+        input{
+            border-radius: 5px;
+            border: 1px solid black;
+            width: 95%;
+            padding: 8px;
+        }
+
+        input.error{
+            background-color: rgb(252, 176, 176);
+            border-color: rgb(255, 0, 0);
+        }
+
+        .error-text{
+            font-size: 12px;
+            color: red;
+            text-align: left;
+            margin-bottom: 5px;
+            margin-left: 6px;
+        }
+
+        label{
+            margin-left: 6px;
+        }
+
+        button{
+            margin-top: 20px;
+            border: none;
+            background-color: rgb(0, 0, 255);
+            padding: 10px 60px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover{
+            background-color: rgb(107, 107, 215);
+        }
+
+        table{
+            margin-top: 20px;
+            width: 100%;
+            display: none;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        th, td{
+            border: 1px solid black;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>SignUp Form</h1>
+
+    <form id="submission-form">
+        <label>Name</label>
+        <input type="text" id="name" placeholder="Enter Your Name">
+        <div class="error-text" id="name-error"></div>
+
+        <label>Mobile</label>
+        <input type="text" id="mobile" maxlength="10" placeholder="Enter Mobile Number">
+        <div class="error-text" id="mobile-error"></div>
+
+        <label>Email</label>
+        <input type="email" id="email" placeholder="Enter Email">
+        <div class="error-text" id="email-error"></div>
+
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Enter Password">
+        <div class="error-text" id="password-error"></div>
+
+        <label>Confirm Password</label>
+        <input type="password" id="confirm-password" placeholder="Confirm Password">
+        <div class="error-text" id="confirmpassword-error"></div>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <table id="table-content">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+</div>
+
+<script>
+    const form = document.getElementById("submission-form");
+    const userTable = document.getElementById("table-content");
+    const tableBody = userTable.querySelector("tbody");
+
+    const nameInput = document.getElementById("name");
+    const numberInput = document.getElementById("mobile");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const confirmPasswordInput = document.getElementById("confirm-password");
+
+    const nameErrorInput = document.getElementById("name-error");
+    const numberErrorInput = document.getElementById("mobile-error");
+    const emailErrorInput = document.getElementById("email-error");
+    const passwordErrorInput = document.getElementById("password-error");
+    const confirmPasswordErrorInput = document.getElementById("confirmpassword-error");
+
+    form.addEventListener("submit", function(e){
+        e.preventDefault();
+        clearAllErrors();
+
+        let isValid = true;
+
+        // Name validation
+        if(nameInput.value.trim().length < 3){
+            showError(nameInput, nameErrorInput, "Name must be at least 3 characters");
+            isValid = false;
+        }
+
+        // Mobile validation
+        const mobileRegex = /^[0-9]{10}$/;
+        if(!mobileRegex.test(numberInput.value.trim())){
+            showError(numberInput, numberErrorInput, "Enter valid 10 digit number");
+            isValid = false;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if(!emailRegex.test(emailInput.value.trim())){
+            showError(emailInput, emailErrorInput, "Enter valid email");
+            isValid = false;
+        }
+
+        // Password validation
+        const passwordRegex = /^(?=.[A-Za-z])(?=.\d).{8,15}$/;
+        if(!passwordRegex.test(passwordInput.value)){
+            showError(passwordInput, passwordErrorInput, "Password must be 8-15 chars & contain number");
+            isValid = false;
+        }
+
+        // Confirm password
+        if(passwordInput.value !== confirmPasswordInput.value){
+            showError(confirmPasswordInput, confirmPasswordErrorInput, "Passwords do not match");
+            isValid = false;
+        }
+
+        // Duplicate check
+        if(isDuplicate(numberInput.value.trim(), emailInput.value.trim())){
+            alert("User already exists in table");
+            return;
+        }
+
+        if(isValid){
+            addTable(
+                nameInput.value.trim(),
+                numberInput.value.trim(),
+                emailInput.value.trim()
+            );
+
+            userTable.style.display = "table";
+            form.reset();
+        }
+    });
+
+    function showError(input, error, message){
+        input.classList.add("error");
+        error.textContent = message;
+    }
+
+    function clearAllErrors(){
+        document.querySelectorAll("input").forEach(i => i.classList.remove("error"));
+        document.querySelectorAll(".error-text").forEach(e => e.textContent = "");
+    }
+
+    function isDuplicate(number, email){
+        const rows = tableBody.querySelectorAll("tr");
+
+        for(let row of rows){
+            if(
+                row.children[1].textContent === number ||
+                row.children[2].textContent === email
+            ){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function addTable(name, mobile, email){
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${name}</td>
+            <td>${mobile}</td>
+            <td>${email}</td>
+        `;
+        tableBody.appendChild(row);
+    }
+</script>
+
+</body>
+</html>
